@@ -12,55 +12,85 @@ public class Warehouse {
         // Day 0
         SupplyAndDemand.generateOrders();
         initial.add(SupplyAndDemand.initialStock());
-        convertIntial(initial);
+        convertInitial(initial);
         for (int i = 0; i <= 30; i++) {
             deliver = sanitizeWarehouse(deliver);
             request = sanitizeWarehouse(request);
             needToDeliver = sanitizeWarehouse(needToDeliver);
+            checkAndRemoveStock(deliver, request, needToDeliver);
+            needToDeliver = sanitizeWarehouse(needToDeliver);
+            System.out.println(needToDeliver);
             removeNull();
             getOrder(i);
         }
-
 //        System.out.println(deliver);
 //        System.out.println("===========================SEPERATION LINE===========================");
 //        System.out.println(request);
 
     }
 
+    public static void checkAndRemoveStock(ArrayList<BetterItem> deliver, ArrayList<BetterItem> request, ArrayList<BetterItem> needToDeliver) {
+
+        for(int i = 0; i < request.size(); i++) {
+            int count = 0;
+            for (int j = 0; j < deliver.size(); j++) {
+                // requesting the same item
+                if(deliver.get(j).getItemName().equals(request.get(i).getItemName())) {
+                    int stockCount = deliver.get(j).getItemCount();
+                    int requestCount = request.get(i).getItemCount();
+                    // if not enough
+                    if(stockCount < requestCount) {
+                        needToDeliver.add(request.get(i));
+                    }
+                    // if enough
+                    else {
+                        count++;
+                        deliver.get(j).setItemCount(stockCount - requestCount);
+                    }
+                }
+            }
+            if (count == deliver.size()) {
+                needToDeliver.add(request.get(i));
+            }
+        }
+    }
+
     public static ArrayList<BetterItem> sanitizeWarehouse(ArrayList<BetterItem> type) {
-        // System.out.println(type);
+        // System.out.println("TYPE IS: " + type);
         ArrayList<BetterItem> toReturn = new ArrayList<>();
-        int i = 0;
+        ArrayList<String> stringOfItems = new ArrayList<>();
         for (BetterItem item : type) {
-            if (toReturn.size() == 0) {
-                toReturn.add(item);
-                toReturn.get(0).setItemCount(0);
+            if (stringOfItems.size() == 0) {
+                stringOfItems.add(item.getItemName());
+
             }
             int count = 0;
-            for (BetterItem betterItem : toReturn) {
-                if (!betterItem.getItemName().equals(item.getItemName())) {
+            for (String betterItem : stringOfItems) {
+                if (!betterItem.equals(item.getItemName())) {
                     count++;
                 }
             }
-            if (count == toReturn.size()) {
-                toReturn.add(item);
-                toReturn.get(i).setItemCount(0);
+            if (count == stringOfItems.size()) {
+                stringOfItems.add(item.getItemName());
             }
         }
+        int count[] = new int [stringOfItems.size()];
 
-        // ArrayList<BetterItem> toReturnCount = new ArrayList<>();
-        for (BetterItem item : toReturn) {
+        for(int j = 0; j < stringOfItems.size(); j++) {
             for (BetterItem betterItem : type) {
-                if (item.getItemName().equals(betterItem.getItemName())) {
-                    System.out.println("toReturn is " + item.getItemCount() + " type is " + betterItem.getItemCount());
-                    item.setItemCount(item.getItemCount() + betterItem.getItemCount());
+                if (stringOfItems.get(j).equals(betterItem.getItemName())) {
+                    count[j] = count[j] + betterItem.getItemCount();
                 }
             }
         }
+        for(int i = 0; i < stringOfItems.size(); i++) {
+            toReturn.add(new BetterItem(count[i], stringOfItems.get(i)));
+        }
+        // System.out.println("TO_RETURN IS" + toReturn);
         return toReturn;
     }
 
-    public static void convertIntial(ArrayList<Order> initial) {
+    public static void convertInitial(ArrayList<Order> initial) {
         for (Order order : initial) {
             changeFormAndAdd(order, deliver);
         }
@@ -116,10 +146,6 @@ public class Warehouse {
                 i--;
             }
         }
-    }
-
-    public static boolean cheackInStock() {
-        return true;
     }
 
 }
