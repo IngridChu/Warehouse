@@ -19,7 +19,14 @@ public class Warehouse {
             needToDeliver = sanitizeWarehouse(needToDeliver);
             checkAndRemoveStock(deliver, request, needToDeliver);
             needToDeliver = sanitizeWarehouse(needToDeliver);
-            System.out.println(needToDeliver);
+            System.out.println();
+            System.out.println("Day " +  i + " Status: ");
+            System.out.println("===== Currently in Stock: =====");
+            printStatus(deliver);
+            System.out.println("===== Delivered today: =====");
+            printStatus(request);
+            System.out.println("===== Need to deliver: =====");
+            printStatus(needToDeliver);
             removeNull();
             getOrder(i);
         }
@@ -29,28 +36,34 @@ public class Warehouse {
 
     }
 
+    public static void printStatus(ArrayList<BetterItem> list) {
+        for (BetterItem betterItem : list) {
+            System.out.println(betterItem.getItemCount() + " " + betterItem.getItemName());
+        }
+    }
+
     public static void checkAndRemoveStock(ArrayList<BetterItem> deliver, ArrayList<BetterItem> request, ArrayList<BetterItem> needToDeliver) {
 
-        for(int i = 0; i < request.size(); i++) {
+        for (BetterItem item : request) {
             int count = 0;
-            for (int j = 0; j < deliver.size(); j++) {
+            for (BetterItem betterItem : deliver) {
                 // requesting the same item
-                if(deliver.get(j).getItemName().equals(request.get(i).getItemName())) {
-                    int stockCount = deliver.get(j).getItemCount();
-                    int requestCount = request.get(i).getItemCount();
+                if (betterItem.getItemName().equals(item.getItemName())) {
+                    int stockCount = betterItem.getItemCount();
+                    int requestCount = item.getItemCount();
                     // if not enough
-                    if(stockCount < requestCount) {
-                        needToDeliver.add(request.get(i));
+                    if (stockCount < requestCount) {
+                        needToDeliver.add(item);
                     }
                     // if enough
                     else {
                         count++;
-                        deliver.get(j).setItemCount(stockCount - requestCount);
+                        betterItem.setItemCount(stockCount - requestCount);
                     }
                 }
             }
             if (count == deliver.size()) {
-                needToDeliver.add(request.get(i));
+                needToDeliver.add(item);
             }
         }
     }
